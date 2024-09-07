@@ -1,0 +1,60 @@
+name: "Get JIRA User Story ID"
+description: "Fetches the User Story ID associated with a given JIRA subtask ID and outputs it in lowercase"
+inputs:
+  issue_id:
+    description: "The JIRA issue ID (must be a Subtask or User Story)"
+    required: true
+  jira_user:
+    description: "The JIRA user (email)"
+    required: true
+  jira_api_token:
+    description: "The JIRA API token"
+    required: true
+  jira_base_url:
+    description: "The base URL for the JIRA instance"
+    required: true
+
+outputs:
+  user_story_id:
+    description: "The ID of the User Story associated with the subtask, in lowercase"
+    value: ${{ steps.fetch.outputs.user_story_id }}
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch Issue Details from JIRA
+      id: fetch
+      shell: bash
+      run: |
+        JIRA_USER=${{ inputs.jira_user }}
+        JIRA_API_TOKEN=${{ inputs.jira_api_token }}
+        JIRA_BASE_URL=${{ inputs.jira_base_url }}
+        ISSUE_ID=${{ inputs.issue_id }}
+
+        # Fetch the issue details
+        RESPONSE=$(curl -s -u $JIRA_USER:$JIRA_API_TOKEN \
+          -X GET -H "Content-Type: application/json" \
+          "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_ID")
+
+        # Extract the issue type
+        ISSUE_TYPE=$(echo $RESPONSE | jq -r '.fields.issuetype.name' | tr '[:upper:]' '[:lower:]')
+
+        # Extract the parent ID if it exists (for Subtasks)
+        PARENT_ID=$(echo $RESPONSE | jq -r '.fields.parent.key')
+
+        # Extract the Epic Link if the issue is a Story
+        EPIC_LINK=$(echo $RESPONSE | jq -r '.fields.customfield_10014 // ""') # Replace 'customfield_10014' with your Epic Link field ID
+
+        # Determine the user story ID or throw an error if not a valid type
+        if [ "$ISSUE_TYPE" = "subtask" ]; then
+          USER_STORY_ID=$PARENT_ID
+        elif [ "$ISSUE_TYPE" = "story" ]; then
+          USER_STORY_ID=$ISSUE_ID
+        else
+          echo "Error: The issue ID $ISSUE_ID is not a Subtask or User Story. It is a $ISSUE_TYPE." >&2
+          exit 1
+        fi
+
+        USER_STORY_ID=$(echo $USER_STORY_ID | tr '[:upper:]' '[:lower:]')
+
+        # Set the output
+        echo "user_story_id=$USER_STORY_ID" >> $GITHUB_OUTPUT

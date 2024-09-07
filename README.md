@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get the JIRA User Story ID
-        uses: your-repo/get-jira-user-story-id@v1
+        uses: canhbk/get-jira-user-story-id@v1
         with:
           issue_id: "JIRA-123"
           jira_user: ${{ secrets.JIRA_USER }}
@@ -41,7 +41,7 @@ jobs:
           jira_base_url: "https://yourcompany.atlassian.net"
 
       - name: Display the User Story ID
-        run: echo "The user story ID is: ${{ steps.fetch.outputs.user_story_id }}"
+        run: echo "The user story ID is: ${{ steps.get_jira_user_id.outputs.user_story_id }}"
 ```
 
 ## How It Works?

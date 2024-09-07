@@ -17,12 +17,12 @@ inputs:
 outputs:
   user_story_id:
     description: "The ID of the User Story associated with the subtask, in lowercase"
-    value: ${{ steps.fetch.outputs.user_story_id }}
+    value: ${{ steps.get_jira_user_id.outputs.user_story_id }}
 runs:
   using: "composite"
   steps:
     - name: Fetch Issue Details from JIRA
-      id: fetch
+      id: get_jira_user_id
       shell: bash
       run: |
         JIRA_USER=${{ inputs.jira_user }}

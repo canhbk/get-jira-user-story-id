@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get the JIRA User Story ID
-        uses: canhbk/get-jira-user-story-id@v1
+        uses: canhbk/get-jira-user-story-id@v1.0.0
         with:
           issue_id: "JIRA-123"
           jira_user: ${{ secrets.JIRA_USER }}

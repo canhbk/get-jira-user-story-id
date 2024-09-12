@@ -1,5 +1,5 @@
 name: "Get JIRA User Story, Bug, or Task ID"
-description: "Fetches the User Story ID associated with a given JIRA subtask ID, or returns the ID of a User Story, Bug, or Task, and outputs it in lowercase"
+description: "Fetches ID of User Story, Bug, or Task from JIRA, including parent ID for subtasks. Outputs in lowercase."
 inputs:
   issue_id:
     description: "The JIRA issue ID (can be a Subtask, User Story, Bug, or Task)"

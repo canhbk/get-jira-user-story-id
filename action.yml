@@ -1,8 +1,8 @@
-name: "Get JIRA User Story ID"
-description: "Fetches the User Story ID associated with a given JIRA subtask ID and outputs it in lowercase"
+name: "Get JIRA User Story, Bug, or Task ID"
+description: "Fetches the User Story ID associated with a given JIRA subtask ID, or returns the ID of a User Story, Bug, or Task, and outputs it in lowercase"
 inputs:
   issue_id:
-    description: "The JIRA issue ID (must be a Subtask or User Story)"
+    description: "The JIRA issue ID (can be a Subtask, User Story, Bug, or Task)"
     required: true
   jira_user:
     description: "The JIRA user (email)"
@@ -15,14 +15,14 @@ inputs:
     required: true
 
 outputs:
-  user_story_id:
-    description: "The ID of the User Story associated with the subtask, in lowercase"
-    value: ${{ steps.get_jira_user_id.outputs.user_story_id }}
+  result_id:
+    description: "The ID of the User Story associated with the subtask, or the ID of the User Story, Bug, or Task, in lowercase"
+    value: ${{ steps.get_jira_issue_id.outputs.result_id }}
 runs:
   using: "composite"
   steps:
     - name: Fetch Issue Details from JIRA
-      id: get_jira_user_id
+      id: get_jira_issue_id
       shell: bash
       run: |
         JIRA_USER=${{ inputs.jira_user }}
@@ -41,20 +41,17 @@ runs:
         # Extract the parent ID if it exists (for Subtasks)
         PARENT_ID=$(echo $RESPONSE | jq -r '.fields.parent.key')
 
-        # Extract the Epic Link if the issue is a Story
-        EPIC_LINK=$(echo $RESPONSE | jq -r '.fields.customfield_10014 // ""') # Replace 'customfield_10014' with your Epic Link field ID
-
-        # Determine the user story ID or throw an error if not a valid type
+        # Determine the result ID based on the issue type
         if [ "$ISSUE_TYPE" = "subtask" ]; then
-          USER_STORY_ID=$PARENT_ID
-        elif [ "$ISSUE_TYPE" = "story" ]; then
-          USER_STORY_ID=$ISSUE_ID
+          RESULT_ID=$PARENT_ID
+        elif [ "$ISSUE_TYPE" = "story" ] || [ "$ISSUE_TYPE" = "bug" ] || [ "$ISSUE_TYPE" = "task" ]; then
+          RESULT_ID=$ISSUE_ID
         else
-          echo "Error: The issue ID $ISSUE_ID is not a Subtask or User Story. It is a $ISSUE_TYPE." >&2
+          echo "Error: The issue ID $ISSUE_ID is not a Subtask, User Story, Bug, or Task. It is a $ISSUE_TYPE." >&2
           exit 1
         fi
 
-        USER_STORY_ID=$(echo $USER_STORY_ID | tr '[:upper:]' '[:lower:]')
+        RESULT_ID=$(echo $RESULT_ID | tr '[:upper:]' '[:lower:]')
 
         # Set the output
-        echo "user_story_id=$USER_STORY_ID" >> $GITHUB_OUTPUT
+        echo "result_id=$RESULT_ID" >> $GITHUB_OUTPUT

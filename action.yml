@@ -1,5 +1,9 @@
 name: "Get JIRA User Story, Bug, or Task ID"
 description: "Fetches ID of User Story, Bug, or Task from JIRA, including parent ID for subtasks. Outputs in lowercase."
+author: "canhbk"
+branding:
+  icon: "tag"
+  color: "blue"
 inputs:
   issue_id:
     description: "The JIRA issue ID (can be a Subtask, User Story, Bug, or Task)"
